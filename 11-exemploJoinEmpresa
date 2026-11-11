@@ -1,0 +1,90 @@
+-- =====================================================================
+-- Exercícios de JOIN - Projeto Empresa (exercícios 1 e 2)
+-- PRÉ-REQUISITO: rodar antes 06_projeto_empresa.sql
+-- =====================================================================
+
+USE empresa;   -- [só MySQL] (no DB Fiddle, apague esta linha)
+
+-- =====================================================================
+-- Exercício 1 - Joins básicos
+-- =====================================================================
+
+-- a) Fornecedores com produtos cadastrados (INNER JOIN)
+SELECT f.nome AS fornecedor, p.nome AS produto
+FROM Fornecedor f
+INNER JOIN Produto p ON p.cnpj_fornecedor = f.cnpj
+ORDER BY f.nome, p.nome;
+
+-- b) Todos os fornecedores, com produtos quando existirem (LEFT JOIN)
+SELECT f.nome AS fornecedor, p.nome AS produto
+FROM Fornecedor f
+LEFT JOIN Produto p ON p.cnpj_fornecedor = f.cnpj
+ORDER BY f.nome, p.nome;
+
+-- c) Todos os produtos, com o fornecedor quando houver (LEFT JOIN a partir de Produto).
+-- Equivalente com RIGHT JOIN: FROM Fornecedor f RIGHT JOIN Produto p ON ...
+SELECT p.nome AS produto, f.nome AS fornecedor
+FROM Produto p
+LEFT JOIN Fornecedor f ON f.cnpj = p.cnpj_fornecedor
+ORDER BY p.nome;
+
+-- d) Fornecedores sem nenhum produto (LEFT JOIN + IS NULL)
+SELECT f.nome AS fornecedor
+FROM Fornecedor f
+LEFT JOIN Produto p ON p.cnpj_fornecedor = f.cnpj
+WHERE p.id IS NULL
+ORDER BY f.nome;
+
+-- e) Fornecedores, seus produtos e a identificação de cada produto
+SELECT f.nome AS fornecedor, p.nome AS produto, i.descricao AS identificacao
+FROM Fornecedor f
+LEFT JOIN Produto p      ON p.cnpj_fornecedor = f.cnpj
+LEFT JOIN Identificacao i ON i.id = p.id
+ORDER BY f.nome, p.nome;
+
+-- =====================================================================
+-- Exercício 2 - Joins com filtros e ordenação
+-- =====================================================================
+
+-- a) Produtos com preço acima de R$ 50,00, com o nome do fornecedor
+-- (o preço fica em Estoque, por isso entra mais um JOIN)
+SELECT f.nome AS fornecedor, p.nome AS produto, e.preco, fl.nome AS filial
+FROM Produto p
+INNER JOIN Fornecedor f ON f.cnpj = p.cnpj_fornecedor
+INNER JOIN Estoque e    ON e.id_produto = p.id
+INNER JOIN Filial fl    ON fl.cnpj = e.cnpj_filial
+WHERE e.preco > 50.00
+ORDER BY f.nome, p.nome;
+
+-- b) Fornecedores cujo nome começa com 'A' e seus produtos, ordenados por fornecedor e produto
+SELECT f.nome AS fornecedor, p.nome AS produto
+FROM Fornecedor f
+INNER JOIN Produto p ON p.cnpj_fornecedor = f.cnpj
+WHERE f.nome LIKE 'A%'
+ORDER BY f.nome, p.nome;
+
+-- c) Fornecedores e produtos em ordem alfabética decrescente por fornecedor
+SELECT f.nome AS fornecedor, p.nome AS produto
+FROM Fornecedor f
+INNER JOIN Produto p ON p.cnpj_fornecedor = f.cnpj
+ORDER BY f.nome DESC, p.nome;
+
+-- d) Fornecedores com seus produtos, só quando o produto tem preço entre R$ 20,00 e R$ 100,00
+SELECT f.nome AS fornecedor, p.nome AS produto, e.preco
+FROM Fornecedor f
+INNER JOIN Produto p ON p.cnpj_fornecedor = f.cnpj
+INNER JOIN Estoque e ON e.id_produto = p.id
+WHERE e.preco BETWEEN 20.00 AND 100.00
+ORDER BY f.nome, p.nome;
+
+-- e) Fornecedores, produtos, quantidade em estoque e filiais em que são vendidos.
+-- Inclui fornecedores sem produtos (LEFT JOIN em toda a cadeia).
+SELECT f.nome AS fornecedor,
+       p.nome AS produto,
+       e.quantidade,
+       fl.nome AS filial
+FROM Fornecedor f
+LEFT JOIN Produto p  ON p.cnpj_fornecedor = f.cnpj
+LEFT JOIN Estoque e  ON e.id_produto = p.id
+LEFT JOIN Filial fl  ON fl.cnpj = e.cnpj_filial
+ORDER BY f.nome, p.nome, fl.nome;
